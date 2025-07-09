@@ -1,0 +1,21 @@
+[
+    {
+      "nome": "Camisa Preta",
+      "descricao": "Camisa 100% algodão - Tamanhos P, M, G",
+      "preco": 49.90,
+      "link": "https://sualoja.com/produto/camisa-preta"
+    },
+    {
+      "nome": "Tênis Esportivo",
+      "descricao": "Tênis leve e confortável - do 37 ao 42",
+      "preco": 199.90,
+      "link": "https://sualoja.com/produto/tenis-esportivo"
+    },
+    {
+      "nome": "Relógio Digital",
+      "descricao": "Relógio com pulseira de silicone e alarme",
+      "preco": 129.90,
+      "link": "https://sualoja.com/produto/relogio-digital"
+    }
+  ]
+  
