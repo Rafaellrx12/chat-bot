@@ -10,9 +10,6 @@ function carregarCatalogo() {
 const client = new Client();
 const produtos = carregarCatalogo();
 
-const ultimaInteracao = new Map(); // Guarda o último horário de interação de cada contato
-
-const TEMPO_INATIVIDADE = 20 * 60 * 1000; // 20 minutos em milissegundos
 
 client.on('qr', (qr) => {
   qrcode.generate(qr, { small: true });
@@ -24,10 +21,6 @@ client.on('ready', () => {
 
 client.on('message', async (message) => {
   const msg = message.body.toLowerCase().trim();
-  const idContato = message.from;
-
-  // Atualiza a hora da última interação
-  ultimaInteracao.set(idContato, Date.now());
 
   if (['menu', 'oi', 'olá'].includes(msg)) {
     await message.reply(
@@ -86,16 +79,5 @@ client.on('message', async (message) => {
   }
 });
 
-
-setInterval(async () => {
-  const agora = Date.now();
-
-  for (const [idContato, ultimaHora] of ultimaInteracao.entries()) {
-    if (agora - ultimaHora >= TEMPO_INATIVIDADE) {
-      await client.sendMessage(idContato, '⏰ Sua sessão foi encerrada por inatividade.\n\nDigite *menu* para iniciar novamente.');
-      ultimaInteracao.delete(idContato); // Remove para reiniciar nova sessão
-    }
-  }
-}, 60 * 1000); // a cada minuto
 
 client.initialize();
