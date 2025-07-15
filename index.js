@@ -23,6 +23,10 @@ client.on('ready', () => {
 
 
 client.on('message', async (message) => {
+  
+  if (message.from.includes('@g.us')) {
+    return;
+  }
   const msg = message.body.toLowerCase().trim();
 
   if (['menu', 'oi', 'olá'].includes(msg)) {
