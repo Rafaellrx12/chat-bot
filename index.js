@@ -46,7 +46,6 @@ client.on('message', async (message) => {
   }
 
   else {
-   
     const produto = produtos.find(p => msg.includes(p.nome.toLowerCase()));
 
     if (encontrado) {
