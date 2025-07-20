@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Catálogo de Produtos</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: black;
+      background-image: url('fundo.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: contain; /* mostra toda a imagem sem cortar */
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95); /* fundo branco semi-transparente */
+      border-radius: 15px;
+      padding: 20px;
+      width: 90%;
+      max-width: 950px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      z-index: 1;
+    }
+
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      margin: 5px;
+      width: 22%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin: 10px 0;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      background-color: #007bff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-editar {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    .btn-excluir {
+      background-color: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Catálogo de Produtos</h1>
+    <form>
+      <input type="text" placeholder="Nome do Produto" />
+      <input type="text" placeholder="Descrição" />
+      <input type="text" placeholder="Valor" />
+      <input type="text" placeholder="Link" />
+      <br />
+      <button type="button">Adicionar</button>
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Link</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sabonete Premium</td>
+          <td>Sabonete 100% natural</td>
+          <td>R$ 15,00</td>
+          <td><a href="#">Ver</a></td>
+          <td>
+            <button class="btn-editar">Editar</button>
+            <button class="btn-excluir">Excluir</button>
+          </td>
+        </tr>
+        <tr>
+          <td>Shampoo Floral</td>
+          <td>Fragrância intensa</td>
+          <td>R$ 25,90</td>
+          <td><a href="#">Ver</a></td>
+          <td>
+            <button class="btn-ed
