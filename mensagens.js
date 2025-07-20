@@ -1,4 +1,4 @@
-export const respostasBot = {
+export const botResponses = {
     boasVindas:
         '👋 Bem-vindo à nossa loja!\n\n' +
         'Escolha uma opção:\n' +

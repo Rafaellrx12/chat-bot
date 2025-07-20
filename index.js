@@ -1,60 +1,68 @@
-import { respostasBot } from './mensagens';
+import { botResponses } from './messages';
 
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const { Client } = require('whatsapp-web.js');
 
-
-function carregarCatalogo() {
-  const data = fs.readFileSync('./catalogo.json', 'utf8');
+// Util: Load product catalog from JSON
+function loadProductCatalog() {
+  const data = fs.readFileSync('./catalog.json', 'utf8');
   return JSON.parse(data);
 }
 
 const client = new Client();
-const produtos = carregarCatalogo();
+const products = loadProductCatalog();
 
-
+// Gera QR Code para autenticação
 client.on('qr', (qr) => {
   qrcode.generate(qr, { small: true });
 });
 
-
+// Confirma que o bot está pronto
 client.on('ready', () => {
-  console.log('🛍️ Bot da Loja Online está pronto!');
+  console.log('🛍️ Online Store Bot is ready!');
 });
 
-
+// Lida com mensagens recebidas
 client.on('message', async (message) => {
-  const msg = message.body.toLowerCase().trim();
+  const userMessage = formatInitialMessage(message.body);
 
-  if (['menu', 'oi', 'olá'].includes(msg)) {
-    await message.reply(respostasBot.boasVindas);
+  if (['menu', 'oi', 'ola'].includes(userMessage)) {
+    await message.reply(botResponses.boasVindas);
   }
 
-  else if (msg === '1') {
-    let texto = '🛍️ *Nossos produtos:*\n\n';
-    texto = respostasBot.listaProdutos(produtos);
-    await message.reply(texto);
+  else if (userMessage === '1') {
+    const productListText = botResponses.listaProdutos(products);
+    await message.reply(productListText);
   }
 
-  else if (msg === '2') {
-    await message.reply(respostasBot.formasPagamento);
+  else if (userMessage === '2') {
+    await message.reply(botResponses.formasPagamento);
   }
 
-  else if (msg === '3') {
-    await message.reply(respostasBot.ajuda);
+  else if (userMessage === '3') {
+    await message.reply(botResponses.ajuda);
   }
 
   else {
-    const produto = produtos.find(p => msg.includes(p.nome.toLowerCase()));
+    const matchedProduct = products.find(p =>
+      userMessage.includes(p.name.toLowerCase())
+    );
 
-    if (encontrado) {
-      await message.reply(respostasBot.detalhesProduto(produto));
+    if (matchedProduct) {
+      await message.reply(botResponses.detalhesProduto(matchedProduct));
     } else {
-      await message.reply(respostasBot.naoEntendi);
+      await message.reply(botResponses.naoEntendi);
     }
   }
 });
 
-
 client.initialize();
+
+function formatInitialMessage(message) {
+  return text
+    .toLowerCase()                    // deixa tudo minúsculo
+    .normalize('NFD')                // separa acentos das letras
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .trim()                         // remove espaços nas extremidades
+}
