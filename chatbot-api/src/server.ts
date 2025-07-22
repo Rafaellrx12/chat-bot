@@ -1,7 +1,13 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { productRoutes } from './routes/products';
 
 const app = Fastify({ logger: true });
+
+app.register(cors, {
+  origin: ['http://127.0.0.1:5500'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+});
 
 app.register(productRoutes);
 
