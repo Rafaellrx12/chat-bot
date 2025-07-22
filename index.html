@@ -94,6 +94,36 @@
       border: none;
       cursor: pointer;
     }
+    /* Estilo do popup modal */
+    #popupEditar {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      z-index: 10000;
+      width: 400px;
+      max-width: 90%;
+    }
+    #popupEditar h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+    #popupEditar input[type="text"] {
+      width: 90%;
+      margin-bottom: 15px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #popupEditar button {
+      width: 48%;
+      margin: 0 1%;
+    }
   </style>
 </head>
 <body>
@@ -117,7 +147,7 @@
           <th>Ações</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tabelaCorpo">
         <tr>
           <td>Sabonete Premium</td>
           <td>Sabonete 100% natural</td>
@@ -141,6 +171,123 @@
       </tbody>
     </table>
   </div>
+  <!-- Popup Modal para edição -->
+  <div id="popupEditar">
+    <h3>Editar Produto</h3>
+    <form id="formEditar" onsubmit="salvarEdicao(event)">
+      <input type="hidden" id="editarIndex" />
+      <input type="text" id="editarNome" placeholder="Nome do Produto" required />
+      <input type="text" id="editarDescricao" placeholder="Descrição" required />
+      <input type="text" id="editarValor" placeholder="Valor" oninput="formatarMoeda(this)" required />
+      <input type="text" id="editarLink" placeholder="Link" required />
+      <br />
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="fecharPopup()">Cancelar</button>
+    </form>
+  </div>
   <script src="script.js"></script>
+  <script>
+    // Função para formatar moeda já existente, usada no popup e no form adicionar
+    function formatarMoeda(campo) {
+      let valor = campo.value.replace(/\D/g, "");
+      if (valor.length === 0) {
+        campo.value = '';
+        return;
+      }
+      valor = (parseFloat(valor) / 100).toFixed(2) + '';
+      valor = valor.replace(".", ",");
+      campo.value = valor;
+    }
+
+    // Pega referências
+    const tabelaCorpo = document.getElementById('tabelaCorpo');
+    const popupEditar = document.getElementById('popupEditar');
+    const formEditar = document.getElementById('formEditar');
+    const formAdicionar = document.getElementById('formAdicionar');
+
+    // Função para abrir popup com dados do item a editar
+    function abrirPopup(index) {
+      const linha = tabelaCorpo.rows[index];
+      document.getElementById('editarIndex').value = index;
+      document.getElementById('editarNome').value = linha.cells[0].textContent;
+      document.getElementById('editarDescricao').value = linha.cells[1].textContent;
+      // Remove "R$ " antes de colocar no input valor
+      document.getElementById('editarValor').value = linha.cells[2].textContent.replace('R$ ', '');
+      document.getElementById('editarLink').value = linha.cells[3].querySelector('a').getAttribute('href');
+      popupEditar.style.display = 'block';
+    }
+
+    // Fecha popup
+    function fecharPopup() {
+      popupEditar.style.display = 'none';
+    }
+
+    // Salva edição no popup
+    function salvarEdicao(e) {
+      e.preventDefault();
+      const index = document.getElementById('editarIndex').value;
+      const nome = document.getElementById('editarNome').value;
+      const descricao = document.getElementById('editarDescricao').value;
+      const valor = document.getElementById('editarValor').value;
+      const link = document.getElementById('editarLink').value;
+
+      const linha = tabelaCorpo.rows[index];
+      linha.cells[0].textContent = nome;
+      linha.cells[1].textContent = descricao;
+      linha.cells[2].textContent = 'R$ ' + valor;
+      linha.cells[3].querySelector('a').setAttribute('href', link);
+
+      fecharPopup();
+    }
+
+    // Delegação para os botões editar
+    tabelaCorpo.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('btn-editar')) {
+        // Pega a linha do botão clicado
+        const tr = e.target.closest('tr');
+        const index = Array.from(tabelaCorpo.rows).indexOf(tr);
+        abrirPopup(index);
+      } else if (e.target && e.target.classList.contains('btn-excluir')) {
+        // Excluir linha
+        if(confirm('Deseja realmente excluir este produto?')) {
+          const tr = e.target.closest('tr');
+          tr.remove();
+        }
+      }
+    });
+
+    // Adicionar novo produto no form adicionar
+    formAdicionar.addEventListener('submit', function(e){
+      e.preventDefault();
+      const nome = document.getElementById('novoNome').value;
+      const descricao = document.getElementById('novoDescricao').value;
+      const valor = document.getElementById('novoValor').value;
+      const link = document.getElementById('novoLink').value;
+
+      // Cria nova linha na tabela
+      const novaLinha = tabelaCorpo.insertRow();
+      novaLinha.insertCell(0).textContent = nome;
+      novaLinha.insertCell(1).textContent = descricao;
+      novaLinha.insertCell(2).textContent = 'R$ ' + valor;
+      const celulaLink = novaLinha.insertCell(3);
+      const a = document.createElement('a');
+      a.href = link;
+      a.textContent = 'Ver';
+      celulaLink.appendChild(a);
+      const celulaAcoes = novaLinha.insertCell(4);
+      const btnEditar = document.createElement('button');
+      btnEditar.className = 'btn-editar';
+      btnEditar.textContent = 'Editar';
+      const btnExcluir = document.createElement('button');
+      btnExcluir.className = 'btn-excluir';
+      btnExcluir.textContent = 'Excluir';
+
+      celulaAcoes.appendChild(btnEditar);
+      celulaAcoes.appendChild(btnExcluir);
+
+      // Limpa formulário
+      formAdicionar.reset();
+    });
+  </script>
 </body>
 </html>
