@@ -1,293 +1,382 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Catálogo de Produtos</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catálogo de Produtos</title>
 
-    body {
-      background: black;
-      background-image: url('fundo.jpg');
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: contain;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      padding: 20px;
-      width: 90%;
-      max-width: 950px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      z-index: 1;
-    }
-
-    h1 {
-      text-align: center;
-      color: #222;
-    }
-
-    input[type="text"] {
-      padding: 8px;
-      margin: 5px;
-      width: 22%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      margin: 10px 0;
-      padding: 8px 15px;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      background-color: #007bff;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .btn-editar {
-      background-color: #28a745;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-
-    .btn-excluir {
-      background-color: #dc3545;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-    }
-    /* Estilo do popup modal */
-    #popupEditar {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      z-index: 10000;
-      width: 400px;
-      max-width: 90%;
-    }
-    #popupEditar h3 {
-      margin-top: 0;
-      text-align: center;
-    }
-    #popupEditar input[type="text"] {
-      width: 90%;
-      margin-bottom: 15px;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #popupEditar button {
-      width: 48%;
-      margin: 0 1%;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Catálogo de Produtos</h1>
-    <form>
-      <input type="text" placeholder="Nome do Produto" />
-      <input type="text" placeholder="Descrição" />
-      <input type="text" placeholder="Valor" />
-      <input type="text" placeholder="Link" />
-      <br />
-      <button type="button">Adicionar</button>
-    </form>
-    <table>
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Descrição</th>
-          <th>Valor</th>
-          <th>Link</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaCorpo">
-        <tr>
-          <td>Sabonete Premium</td>
-          <td>Sabonete 100% natural</td>
-          <td>R$ 15,00</td>
-          <td><a href="#">Ver</a></td>
-          <td>
-            <button class="btn-editar">Editar</button>
-            <button class="btn-excluir">Excluir</button>
-          </td>
-        </tr>
-        <tr>
-          <td>Shampoo Floral</td>
-          <td>Fragrância intensa</td>
-          <td>R$ 25,90</td>
-          <td><a href="#">Ver</a></td>
-          <td>
-            <button class="btn-editar">Editar</button>
-            <button class="btn-excluir">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <!-- Popup Modal para edição -->
-  <div id="popupEditar">
-    <h3>Editar Produto</h3>
-    <form id="formEditar" onsubmit="salvarEdicao(event)">
-      <input type="hidden" id="editarIndex" />
-      <input type="text" id="editarNome" placeholder="Nome do Produto" required />
-      <input type="text" id="editarDescricao" placeholder="Descrição" required />
-      <input type="text" id="editarValor" placeholder="Valor" oninput="formatarMoeda(this)" required />
-      <input type="text" id="editarLink" placeholder="Link" required />
-      <br />
-      <button type="submit">Salvar</button>
-      <button type="button" onclick="fecharPopup()">Cancelar</button>
-    </form>
-  </div>
-  <script src="script.js"></script>
-  <script>
-    // Função para formatar moeda já existente, usada no popup e no form adicionar
-    function formatarMoeda(campo) {
-      let valor = campo.value.replace(/\D/g, "");
-      if (valor.length === 0) {
-        campo.value = '';
-        return;
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
       }
-      valor = (parseFloat(valor) / 100).toFixed(2) + '';
-      valor = valor.replace(".", ",");
-      campo.value = valor;
-    }
 
-    // Pega referências
-    const tabelaCorpo = document.getElementById('tabelaCorpo');
-    const popupEditar = document.getElementById('popupEditar');
-    const formEditar = document.getElementById('formEditar');
-    const formAdicionar = document.getElementById('formAdicionar');
+      body {
+        background: black;
+        background-image: url("fundo.jpg");
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: contain;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-    // Função para abrir popup com dados do item a editar
-    function abrirPopup(index) {
-      const linha = tabelaCorpo.rows[index];
-      document.getElementById('editarIndex').value = index;
-      document.getElementById('editarNome').value = linha.cells[0].textContent;
-      document.getElementById('editarDescricao').value = linha.cells[1].textContent;
-      // Remove "R$ " antes de colocar no input valor
-      document.getElementById('editarValor').value = linha.cells[2].textContent.replace('R$ ', '');
-      document.getElementById('editarLink').value = linha.cells[3].querySelector('a').getAttribute('href');
-      popupEditar.style.display = 'block';
-    }
+      /* Container principal */
+      .container {
+        background: rgba(253, 246, 246, 0.87);
+        border-radius: 15px;
+        padding: 25px;
+        width: 90%;
+        max-width: 950px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        z-index: 1;
+        text-align: center;
+      }
 
-    // Fecha popup
-    function fecharPopup() {
-      popupEditar.style.display = 'none';
-    }
+      /* Título principal */
+      h1 {
+        text-align: center;
+        color: #222;
+        font-size: 28px;
+        margin-bottom: 15px;
+      }
 
-    // Salva edição no popup
-    function salvarEdicao(e) {
-      e.preventDefault();
-      const index = document.getElementById('editarIndex').value;
-      const nome = document.getElementById('editarNome').value;
-      const descricao = document.getElementById('editarDescricao').value;
-      const valor = document.getElementById('editarValor').value;
-      const link = document.getElementById('editarLink').value;
+      /* Inputs do formulário */
+      input[type="text"] {
+        padding: 10px;
+        margin: 5px;
+        width: 22%;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        transition: 0.2s;
+      }
 
-      const linha = tabelaCorpo.rows[index];
-      linha.cells[0].textContent = nome;
-      linha.cells[1].textContent = descricao;
-      linha.cells[2].textContent = 'R$ ' + valor;
-      linha.cells[3].querySelector('a').setAttribute('href', link);
+      input[type="text"]:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+      }
 
-      fecharPopup();
-    }
+      /* Botões principais */
+      button {
+        margin: 10px 0;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        background-color: #007bff;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
 
-    // Delegação para os botões editar
-    tabelaCorpo.addEventListener('click', function(e) {
-      if (e.target && e.target.classList.contains('btn-editar')) {
-        // Pega a linha do botão clicado
-        const tr = e.target.closest('tr');
-        const index = Array.from(tabelaCorpo.rows).indexOf(tr);
-        abrirPopup(index);
-      } else if (e.target && e.target.classList.contains('btn-excluir')) {
-        // Excluir linha
-        if(confirm('Deseja realmente excluir este produto?')) {
-          const tr = e.target.closest('tr');
-          tr.remove();
+      button:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+      }
+
+      /* Container da tabela com rolagem */
+      .table-container {
+        max-height: 300px; /* limite de altura */
+        overflow-y: auto;  /* rolagem vertical */
+        margin-top: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+
+      /* Tabela */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+      }
+
+      thead {
+        position: sticky;
+        top: 0;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        z-index: 2;
+      }
+
+      /* Botões de ação */
+      .btn-editar {
+        background-color: #28a745;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-right: 5px;
+      }
+
+      .btn-editar:hover {
+        background-color: #218838;
+      }
+
+      .btn-excluir {
+        background-color: #dc3545;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .btn-excluir:hover {
+        background-color: #b02a37;
+      }
+
+      /* QR Code */
+      #qr-container {
+        margin-bottom: 20px;
+      }
+
+      #qr-container h2 {
+        margin-bottom: 10px;
+        font-size: 20px;
+        color: #333;
+      }
+
+      #qrcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px dashed #007bff;
+        border-radius: 12px;
+        padding: 15px;
+        background: #f9f9f9;
+        width: fit-content;
+        margin: 0 auto 20px auto;
+      }
+
+      #qrcode img {
+        width: 200px;
+        height: 200px;
+      }
+
+      /* Popup editar */
+      #popupEditar {
+        display: none;
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        width: 400px;
+        max-width: 90%;
+      }
+
+      #popupEditar h3 {
+        margin-top: 0;
+        text-align: center;
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      #popupEditar input[type="text"] {
+        width: 90%;
+        margin-bottom: 15px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      #popupEditar button {
+        width: 48%;
+        margin: 0 1%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Catálogo de Produtos</h1>
+
+      <!-- QR Code -->
+      <div id="qr-container">
+        <h2>Conecte seu WhatsApp</h2>
+        <div id="qrcode">Aguardando QR Code...</div>
+      </div>
+
+      <form>
+        <input type="text" placeholder="Nome do Produto" />
+        <input type="text" placeholder="Descrição" />
+        <input type="text" placeholder="Valor" />
+        <input type="text" placeholder="Link" />
+        <br />
+        <button type="button">Adicionar</button>
+      </form>
+
+      <!-- Tabela com rolagem -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Link</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo">
+            <tr>
+              <td>Sabonete Premium</td>
+              <td>Sabonete 100% natural</td>
+              <td>R$ 15,00</td>
+              <td><a href="#">Ver</a></td>
+              <td>
+                <button class="btn-editar">Editar</button>
+                <button class="btn-excluir">Excluir</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Shampoo Floral</td>
+              <td>Fragrância intensa</td>
+              <td>R$ 25,90</td>
+              <td><a href="#">Ver</a></td>
+              <td>
+                <button class="btn-editar">Editar</button>
+                <button class="btn-excluir">Excluir</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Popup Modal para edição -->
+    <div id="popupEditar">
+      <h3>Editar Produto</h3>
+      <form id="formEditar" onsubmit="salvarEdicao(event)">
+        <input type="hidden" id="editarIndex" />
+        <input
+          type="text"
+          id="editarNome"
+          placeholder="Nome do Produto"
+          required
+        />
+        <input
+          type="text"
+          id="editarDescricao"
+          placeholder="Descrição"
+          required
+        />
+        <input
+          type="text"
+          id="editarValor"
+          placeholder="Valor"
+          oninput="formatarMoeda(this)"
+          required
+        />
+        <input type="text" id="editarLink" placeholder="Link" required />
+        <br />
+        <button type="submit">Salvar</button>
+        <button type="button" onclick="fecharPopup()">Cancelar</button>
+      </form>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      // Função para formatar moeda já existente, usada no popup e no form adicionar
+      function formatarMoeda(campo) {
+        let valor = campo.value.replace(/\D/g, "");
+        if (valor.length === 0) {
+          campo.value = "";
+          return;
         }
+        valor = (parseFloat(valor) / 100).toFixed(2) + "";
+        valor = valor.replace(".", ",");
+        campo.value = valor;
       }
-    });
 
-    // Adicionar novo produto no form adicionar
-    formAdicionar.addEventListener('submit', function(e){
-      e.preventDefault();
-      const nome = document.getElementById('novoNome').value;
-      const descricao = document.getElementById('novoDescricao').value;
-      const valor = document.getElementById('novoValor').value;
-      const link = document.getElementById('novoLink').value;
+      // Pega referências
+      const tabelaCorpo = document.getElementById("tabelaCorpo");
+      const popupEditar = document.getElementById("popupEditar");
 
-      // Cria nova linha na tabela
-      const novaLinha = tabelaCorpo.insertRow();
-      novaLinha.insertCell(0).textContent = nome;
-      novaLinha.insertCell(1).textContent = descricao;
-      novaLinha.insertCell(2).textContent = 'R$ ' + valor;
-      const celulaLink = novaLinha.insertCell(3);
-      const a = document.createElement('a');
-      a.href = link;
-      a.textContent = 'Ver';
-      celulaLink.appendChild(a);
-      const celulaAcoes = novaLinha.insertCell(4);
-      const btnEditar = document.createElement('button');
-      btnEditar.className = 'btn-editar';
-      btnEditar.textContent = 'Editar';
-      const btnExcluir = document.createElement('button');
-      btnExcluir.className = 'btn-excluir';
-      btnExcluir.textContent = 'Excluir';
+      // Função para abrir popup com dados do item a editar
+      function abrirPopup(index) {
+        const linha = tabelaCorpo.rows[index];
+        document.getElementById("editarIndex").value = index;
+        document.getElementById("editarNome").value =
+          linha.cells[0].textContent;
+        document.getElementById("editarDescricao").value =
+          linha.cells[1].textContent;
+        // Remove "R$ " antes de colocar no input valor
+        document.getElementById("editarValor").value =
+          linha.cells[2].textContent.replace("R$ ", "");
+        document.getElementById("editarLink").value = linha.cells[3]
+          .querySelector("a")
+          .getAttribute("href");
+        popupEditar.style.display = "block";
+      }
 
-      celulaAcoes.appendChild(btnEditar);
-      celulaAcoes.appendChild(btnExcluir);
+      // Fecha popup
+      function fecharPopup() {
+        popupEditar.style.display = "none";
+      }
 
-      // Limpa formulário
-      formAdicionar.reset();
-    });
-  </script>
-</body>
+      // Salva edição no popup
+      function salvarEdicao(e) {
+        e.preventDefault();
+        const index = document.getElementById("editarIndex").value;
+        const nome = document.getElementById("editarNome").value;
+        const descricao = document.getElementById("editarDescricao").value;
+        const valor = document.getElementById("editarValor").value;
+        const link = document.getElementById("editarLink").value;
+
+        const linha = tabelaCorpo.rows[index];
+        linha.cells[0].textContent = nome;
+        linha.cells[1].textContent = descricao;
+        linha.cells[2].textContent = "R$ " + valor;
+        linha.cells[3].querySelector("a").setAttribute("href", link);
+
+        fecharPopup();
+      }
+
+      // Delegação para os botões editar e excluir
+      tabelaCorpo.addEventListener("click", function (e) {
+        if (e.target && e.target.classList.contains("btn-editar")) {
+          // Pega a linha do botão clicado
+          const tr = e.target.closest("tr");
+          const index = Array.from(tabelaCorpo.rows).indexOf(tr);
+          abrirPopup(index);
+        } else if (e.target && e.target.classList.contains("btn-excluir")) {
+          // Excluir linha
+          if (confirm("Deseja realmente excluir este produto?")) {
+            const tr = e.target.closest("tr");
+            tr.remove();
+          }
+        }
+      });
+    </script>
+
+    <!-- WebSocket para receber o QR -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      socket.on("qr", (qr) => {
+        document.getElementById(
+          "qrcode"
+        ).innerHTML = `<img src="${qr}" alt="QR Code do WhatsApp" />`;
+      });
+    </script>
+  </body>
 </html>

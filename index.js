@@ -1,54 +1,97 @@
-import { botResponses } from './messages';
+import { botResponses } from "./mensagens.js";
+import qrcode from "qrcode-terminal";
+import fetch from "node-fetch"; // Se usar Node >=18, pode remover
+import { Client } from "whatsapp-web.js";
+import express from "express";
+import { Server } from "socket.io";
+import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const qrcode = require('qrcode-terminal');
-const fs = require('fs');
-const { Client } = require('whatsapp-web.js');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Util: Load product catalog from JSON
-function loadProductCatalog() {
-  const data = fs.readFileSync('./catalog.json', 'utf8');
-  return JSON.parse(data);
-}
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 const client = new Client();
-const products = loadProductCatalog();
+let products = [];
 
-// Gera QR Code para autenticação
-client.on('qr', (qr) => {
-  qrcode.generate(qr, { small: true });
+// Controle de interação
+const ultimaInteracao = new Map();
+const TEMPO_INATIVIDADE = 20 * 60 * 1000;
+
+// ---------------- Funções ----------------
+async function loadProductCatalog() {
+  try {
+    const res = await fetch("http://localhost:3001/products");
+    if (!res.ok) throw new Error("Erro ao buscar produtos da API");
+    const data = await res.json();
+    return data.map((p) => ({
+      nome: p.name,
+      descricao: p.description,
+      preco: p.price,
+      link: p.link,
+      id: p.id,
+    }));
+  } catch (error) {
+    console.error("Erro ao carregar produtos:", error);
+    return [];
+  }
+}
+
+function formatInitialMessage(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+// ---------------- Bot WhatsApp ----------------
+client.on("qr", (qr) => {
+  qrcode.generate(qr, { small: true }); // Mostra no terminal
+  io.emit(
+    "qr",
+    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qr)}`
+  );
 });
 
-// Confirma que o bot está pronto
-client.on('ready', () => {
-  console.log('🛍️ Online Store Bot is ready!');
+client.on("ready", async () => {
+  console.log("🛍️ Bot pronto!");
+  products = await loadProductCatalog();
 });
 
-// Lida com mensagens recebidas
-client.on('message', async (message) => {
+client.on("message", async (message) => {
+  if (message.from.includes("@g.us")) return;
+
   const userMessage = formatInitialMessage(message.body);
+  const userId = message.from;
+  const agora = Date.now();
 
-  if (['menu', 'oi', 'ola'].includes(userMessage)) {
+  const ultimaHora = ultimaInteracao.get(userId);
+  const isNovaConversa = !ultimaHora || agora - ultimaHora >= TEMPO_INATIVIDADE;
+
+  ultimaInteracao.set(userId, agora);
+
+  if (isNovaConversa) {
     await message.reply(botResponses.boasVindas);
+    return;
   }
 
-  else if (userMessage === '1') {
-    const productListText = botResponses.listaProdutos(products);
-    await message.reply(productListText);
-  }
-
-  else if (userMessage === '2') {
+  if (["menu", "oi", "ola"].includes(userMessage)) {
+    await message.reply(botResponses.boasVindas);
+  } else if (userMessage === "1") {
+    await message.reply(botResponses.listaProdutos(products));
+  } else if (userMessage === "2") {
     await message.reply(botResponses.formasPagamento);
-  }
-
-  else if (userMessage === '3') {
+  } else if (userMessage === "3") {
     await message.reply(botResponses.ajuda);
-  }
-
-  else {
-    const matchedProduct = products.find(p =>
-      userMessage.includes(p.name.toLowerCase())
+  } else {
+    const matchedProduct = products.find((p) =>
+      userMessage.includes(p.nome.toLowerCase())
     );
-
     if (matchedProduct) {
       await message.reply(botResponses.detalhesProduto(matchedProduct));
     } else {
@@ -57,12 +100,30 @@ client.on('message', async (message) => {
   }
 });
 
+// Timer para encerrar sessão
+setInterval(async () => {
+  const agora = Date.now();
+  for (const [idContato, ultimaHora] of ultimaInteracao.entries()) {
+    if (agora - ultimaHora >= TEMPO_INATIVIDADE) {
+      await client.sendMessage(
+        idContato,
+        "⏰ Sua sessão foi encerrada por inatividade.\n\nDigite *menu* para começar novamente."
+      );
+      ultimaInteracao.delete(idContato);
+    }
+  }
+}, 60 * 1000);
+
 client.initialize();
 
-function formatInitialMessage(message) {
-  return text
-    .toLowerCase()                    // deixa tudo minúsculo
-    .normalize('NFD')                // separa acentos das letras
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .trim()                         // remove espaços nas extremidades
-}
+// ---------------- Servir arquivos estáticos ----------------
+app.use(express.static(__dirname)); // Serve index.html e assets da mesma pasta
+
+// Rota para catálogo (serve o index.html)
+app.get("/catalogo", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+server.listen(3000, () => {
+  console.log("Acesse http://localhost:3000/catalogo para ver o catálogo e QR Code");
+});
